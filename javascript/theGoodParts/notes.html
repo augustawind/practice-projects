@@ -1,0 +1,129 @@
+<h1>NOTES for JavaScript: The Good Parts </h1>
+
+<h2>Best practices for writing clean, effective JavaScript </h2>
+
+<h3>1. The Good Parts</h3>
+
+<ul><li>Unlearning bad habits is harder than learning good habits</li><li>Avoid the bad parts of JS by adhering to a curated subset of the language</li></ul>
+
+<h4>The Good vs The Bad</h4>
+
+<ul><li>Good parts<ul><li>Functions</li><li>Loose typing</li><li>Dynamic objects</li><li>Expressive object literal notation</li></ul></li><li>Bad parts<ul><li>A programming model based on global variables</li><li>...</li></ul></li></ul>
+
+<h3>2. Grammar</h3>
+
+<h4>Whitespace</h4>
+
+<ul><li>Whitespace is usually insignicant</li><li>Never use block comments, because <code>/*</code> and <code>*/</code> are sometimes found in
+regular expressions and could cause errors</li></ul>
+
+<h4>Names</h4>
+
+<p>Names can start with a letter or underscore, and can contain letters,
+underscores, and digits. Names cannot be the following reserved words:
++ <code>abstract</code>
++ <code>boolean break byte</code>
++ <code>case catch char class const continue</code>
++ <code>debugger default delete do double</code>
++ <code>else enum export extends</code>
++ <code>false final finally float for function</code>
++ <code>goto</code>
++ <code>if implements import in instanceof int interface</code>
++ <code>long</code>
++ <code>native new null</code>
++ <code>package private protected public</code>
++ <code>return</code>
++ <code>short static super switch synchronized</code>
++ <code>this throw throws transient true try typeof</code>
++ <code>var volatile void</code>
++ <code>while with</code></p>
+
+<h4>Numbers</h4>
+
+<ul><li>JS has a single number type, a 64-bit floating point number</li><li>Numbers can have 3 forms<ul><li>integer (<code>0</code>, <code>50</code>, <code>-5</code>) - cannot begin with <code>0</code></li><li>fraction (<code>.5</code>, <code>0.199</code>, <code>-1.07</code>) - leading <code>0</code> not required</li><li>exponent (<code>1e2</code>, <code>3e-25</code>, <code>5E9</code>)</li></ul></li><li><code>NaN</code> is a number value that is the result of an operation that cannot
+produce a normal result</li><li><code>Infinity</code> represents all numbers greater than <code>1.79769313486231570e+308</code></li></ul>
+
+<h4>Strings</h4>
+
+<ul><li>All strings are 16-bit Unicode.</li><li>Strings are immutable.</li></ul>
+
+<h4>Equality</h4>
+
+<p><em>Falsey</em> values:</p>
+
+<ul><li><code>false</code></li><li><code>null</code></li><li><code>undefined</code></li><li>The empty string <code>&#39;&#39;</code></li><li>The number <code>0</code></li><li>The number <code>NaN</code></li></ul>
+
+<p>All other values are truthy.</p>
+
+<h3>3. Objects</h3>
+
+<p>Use prototypes where possible to reduce object initialization time and memory
+consumption.</p>
+
+<h4>Retrieval (getting a value from an object)</h4>
+
+<ul><li>Prefer <code>.</code> notation for retrieval where possible for readability.</li><li><p><code>undefined</code> is produced if an attempt is made to retrieve a nonexistent
+member</p></li><li><p><code>||</code> can be used to fill in default values:</p><p>var email = person.email || &#39;n/a&#39;;</p></li><li><p>Attempting to retrieve values from <code>undefined</code> will throw a <code>TypeError</code>. This
+can be guarded against with the <code>&amp;&amp;</code> operator:</p><p>person.children                             // undefined
+person.children.paul                        // throw &quot;TypeError&quot;
+person.children &amp;&amp; person.children.paul     // undefined</p></li></ul>
+
+<h4>Update</h4>
+
+<ul><li>A value can be updated by assignment.</li><li>If the property name already exists, the value is replaced.</li><li>If it does not exist, the object is augmented with a new property.</li></ul>
+
+<h4>Reference</h4>
+
+<p>Objects are passed around by reference. They are never copied.</p>
+
+<h4>Prototype</h4>
+
+<ul><li>Every object is linked to a prototype object from which it can inherit
+properties.</li><li>Objects created by object literals (<code>{}</code>) are linked to <code>Object.prototype</code>.</li><li><p>The mechanism provided by JavaScript for creating new objects from prototypes
+is messy and complex. We will add a <code>create</code> method to the <code>Object</code> function:</p><p>if (typeof Object.create !== &#39;function&#39;) {
+    Object.create = function (o) {
+        var F = function () {};
+        F.prototype = o;
+        return new F();
+    };
+}</p></li><li><p>The prototype has no effect on updating. It is used only in retrieval.</p></li><li>If we try to retrieve a value from an object and it lacks the given property,
+JavaScript will go up the prototype chain until it finds it, or return
+<code>undefined</code>. This is called <em>delegation</em>.</li><li>The prototype relationship is dynamic. If we add a new property to a
+prototype, that property will immediately be visible to all objects that are
+based on that prototype. </li></ul>
+
+<h4>Reflection</h4>
+
+<ul><li>Use <code>Object.hasOwnProperty</code> to check if a property belongs to a specific
+object, ignoring its prototype chain.</li><li>Using <code>typeof someObject !== &#39;function&#39;</code> can be useful as well if you are
+only interested in retrieving data.</li></ul>
+
+<h4>Enumeration</h4>
+
+<ul><li>The <code>for in</code> statement loops over the property names of an object, including
+functions and prototype properties.</li><li>There is no guaruntee on the order of property names in the loop.</li><li><p>To loop over object properties in a particular order, use <code>for</code> with an array
+containing the property names in the correct order:</p><p>var i;
+var properties = [
+    &#39;first-name&#39;,
+    &#39;middle-name&#39;,
+    &#39;last-name&#39;,
+    &#39;profession&#39;
+];
+for (i = 0; i &lt; properties.length; i += 1) {
+    document.writeln(properties[i] + &#39;: &#39; +
+    another_stooge[properties[i]]);
+}</p></li></ul>
+
+<h4>Delete</h4>
+
+<ul><li><p>The <code>delete</code> operator removes a property from an object, and ignores its
+prototype chain:</p><p>delete person.email</p></li><li><p>Removing a property from an object may allow a property from its prototype to
+shine through.</p></li></ul>
+
+<h4>Global Abatement</h4>
+
+<ul><li><p>Minimize the use of global variables by creating a single global variable for
+your application:</p><p>var APP = {};</p></li><li><p>This increases readability and reduces the chance of conflicts with other
+applications or libraries.</p></li></ul>
+
+<h3>4. Functions</h3>
