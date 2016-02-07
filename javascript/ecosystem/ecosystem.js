@@ -9,7 +9,7 @@ Vector.prototype.plus = function(other) {
     return new Vector(this.x + other.x, this.y + other.y);
 };
 
-var directions = {
+const directions = {
     n:  new Vector( 0, -1),
     ne: new Vector( 1, -1),
     e:  new Vector( 1,  0),
@@ -20,10 +20,10 @@ var directions = {
     nw: new Vector(-1, -1)
 };
 
-var directionNames = 'n ne e se s sw w nw'.split(' ');
+const directionNames = 'n ne e se s sw w nw'.split(' ');
 
 function dirPlus(dir, n) {
-    var index = directionNames.indexOf(dir);
+    const index = directionNames.indexOf(dir);
     return directionNames[(index + n + 8) % 8];
 }
 
@@ -34,7 +34,7 @@ function randomElement(array) {
 function elementFromChar(legend, ch) {
     if (ch === ' ')
         return null;
-    var element = new legend[ch]();
+    const element = new legend[ch]();
     element.originChar = ch;
     return element;
 }
@@ -51,9 +51,9 @@ function Grid(width, height) {
     this.height = height;
 }
 Grid.prototype.forEach = function(f, context) {
-    for (var y = 0; y < this.height; y++) {
-        for (var x = 0; x < this.width; x++) {
-            var value = this.space[x + y * this.width];
+    for (let y = 0; y < this.height; y++) {
+        for (let x = 0; x < this.width; x++) {
+            const value = this.space[x + y * this.width];
             if (value != null)
                 f.call(context, value, new Vector(x, y));
         }
@@ -76,17 +76,17 @@ Grid.prototype.set = function(vector, value) {
 // World
 // ----------------------------------------------------------------------------
 function World(map, legend) {
-    var grid = new Grid(map[0].length, map.length);
+    const grid = new Grid(map[0].length, map.length);
     this.grid = grid;
     this.legend = legend;
 
     map.forEach(function(line, y) {
-        for (var x = 0; x < line.length; x++)
+        for (let x = 0; x < line.length; x++)
             grid.set(new Vector(x, y), elementFromChar(legend, line[x]));
     });
 }
 World.prototype.turn = function() {
-    var acted = [];
+    const acted = [];
     this.grid.forEach(function(critter, vector) {
         if (critter.act && acted.indexOf(critter) == -1) {
             acted.push(critter);
@@ -95,9 +95,9 @@ World.prototype.turn = function() {
     }, this);
 };
 World.prototype.letAct = function(critter, vector) {
-    var action = critter.act(new View(this, vector));
+    const action = critter.act(new View(this, vector));
     if (action && action.type === 'move') {
-        var dest = this.checkDestination(action, vector);
+        const dest = this.checkDestination(action, vector);
         if (dest && this.grid.get(dest) === null) {
             this.grid.set(vector, null);
             this.grid.set(dest, critter);
@@ -106,16 +106,16 @@ World.prototype.letAct = function(critter, vector) {
 };
 World.prototype.checkDestination = function(action, vector) {
     if (directions.hasOwnProperty(action.direction)) {
-        var dest = vector.plus(directions[action.direction]);
+        const dest = vector.plus(directions[action.direction]);
         if (this.grid.isInside(dest))
             return dest;
     }
 };
 World.prototype.toString = function() {
-    var output = '';
-    for (var y = 0; y < this.grid.height; y++) {
-        for (var x = 0; x < this.grid.width; x++) {
-            var element = this.grid.get(new Vector(x, y));
+    let output = '';
+    for (let y = 0; y < this.grid.height; y++) {
+        for (let x = 0; x < this.grid.width; x++) {
+            let element = this.grid.get(new Vector(x, y));
             output += charFromElement(element);
         }
         output += '\n';
@@ -130,21 +130,21 @@ function View(world, vector) {
     this.vector = vector;
 }
 View.prototype.look = function(dir) {
-    var target = this.vector.plus(directions[dir]);
+    const target = this.vector.plus(directions[dir]);
     if (this.world.grid.isInside(target))
         return charFromElement(this.world.grid.get(target));
     else
         return '#';
 };
 View.prototype.findAll = function(ch) {
-    var found = [];
-    for (var dir in directions)
+    const found = [];
+    for (let dir in directions)
         if (this.look(dir) === ch)
             found.push(dir);
     return found;
 };
 View.prototype.find = function(ch) {
-    var found = this.findAll(ch);
+    const found = this.findAll(ch);
     if (found.length === 0) return null;
     return randomElement(found);
 };
@@ -166,7 +166,7 @@ function WallFollower() {
     this.dir = 's';
 }
 WallFollower.prototype.act = function(view) {
-    var start = this.dir;
+    let start = this.dir;
     if (view.look(dirPlus(this.dir, -3)) != ' ')
         start = this.dir = dirPlus(this.dir, -2);
     while (view.look(this.dir) != ' ') {
@@ -192,8 +192,8 @@ function LifelikeWorld(map, legend) {
 }
 LifelikeWorld.prototype = Object.create(World.prototype);
 LifelikeWorld.prototype.letAct = function(critter, vector) {
-    var action = critter.act(new View(this, vector));
-    var handled = action &&
+    const action = critter.act(new View(this, vector));
+    const handled = action &&
         action.type in actionTypes &&
         actionTypes[action.type].call(this, critter, vector, action);
 
@@ -206,13 +206,13 @@ LifelikeWorld.prototype.letAct = function(critter, vector) {
 
 // Actions
 // ----------------------------------------------------------------------------
-var actionTypes = Object.create(null);
+const actionTypes = Object.create(null);
 actionTypes.grow = function(critter) {
     critter.energy += 0.5;
     return true;
 };
 actionTypes.move = function(critter, vector, action) {
-    var dest = this.checkDestination(action, vector);
+    const dest = this.checkDestination(action, vector);
     if (dest === null ||
         critter.energy <= 1 ||
         this.grid.get(dest) != null)
@@ -223,8 +223,8 @@ actionTypes.move = function(critter, vector, action) {
     return true;
 };
 actionTypes.eat = function(critter, vector, action) {
-    var dest = this.checkDestination(action, vector);
-    var atDest = dest !== null && this.grid.get(dest);
+    const dest = this.checkDestination(action, vector);
+    const atDest = dest !== null && this.grid.get(dest);
     if (!atDest || atDest.energy === null)
         return false;
     critter.energy += atDest.energy;
@@ -232,8 +232,8 @@ actionTypes.eat = function(critter, vector, action) {
     return true;
 };
 actionTypes.reproduce = function(critter, vector, action) {
-    var baby = elementFromChar(this.legend, critter.originChar);
-    var dest = this.checkDestination(action, vector);
+    const baby = elementFromChar(this.legend, critter.originChar);
+    const dest = this.checkDestination(action, vector);
     if (dest === null ||
         critter.energy <= 2 * baby.energy ||
         this.grid.get(dest) !== null)
@@ -250,7 +250,7 @@ function Plant() {
 }
 Plant.prototype.act = function(view) {
     if (this.energy > 15) {
-        var space = view.find(' ');
+        const space = view.find(' ');
         if (space)
             return {type: 'reproduce', direction: space};
     }
@@ -262,10 +262,10 @@ function Herbivore() {
     this.energy = 20;
 }
 Herbivore.prototype.act = function(view) {
-    var space = view.find(' ');
+    const space = view.find(' ');
     if (this.energy > 60 && space)
         return {type: 'reproduce', direction: space};
-    var plant = view.find('*');
+    const plant = view.find('*');
     if (plant)
         return {type: 'eat', direction: plant};
     if (space)
@@ -277,11 +277,11 @@ function SmartHerbivore() {
     this.direction = randomElement(directionNames);
 }
 SmartHerbivore.prototype.act = function(view) {
-    var space = view.find(' ');
+    const space = view.find(' ');
     if (this.energy > 60 && space)
         return {type: 'reproduce', direction: space};
-    var plant = view.find('*');
-    var plants = view.findAll('*');
+    const plant = view.find('*');
+    const plants = view.findAll('*');
     if (plant && plants.length > 1)
         return {type: 'eat', direction: plant};
     if (view.look(this.direction) != ' ')
@@ -294,10 +294,10 @@ function Tiger() {
 }
 Tiger.prototype.act = function(view) {
     console.log(this.energy);
-    var space = view.find(' ');
+    const space = view.find(' ');
     if (this.energy > 70 && space)
         return {type: 'reproduce', direction: space};
-    var herbivore = view.find('O');
+    const herbivore = view.find('O');
     if (herbivore)
         return {type: 'eat', direction: herbivore};
     if (space && this.energy > 10)
@@ -306,7 +306,7 @@ Tiger.prototype.act = function(view) {
 
 // Run the app
 // ----------------------------------------------------------------------------
-var world = new LifelikeWorld(
+const world = new LifelikeWorld(
   ["####################################################",
    "#                 ####         ****              ###",
    "#   *  @  ##                 ########       OO    ##",
