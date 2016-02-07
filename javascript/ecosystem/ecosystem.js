@@ -1,3 +1,4 @@
+'use strict';
 // Basics
 // ----------------------------------------------------------------------------
 function Vector(x, y) {
@@ -257,10 +258,10 @@ Plant.prototype.act = function(view) {
         return {type: 'grow'};
 };
 
-function PlantEater() {
+function Herbivore() {
     this.energy = 20;
 }
-PlantEater.prototype.act = function(view) {
+Herbivore.prototype.act = function(view) {
     var space = view.find(' ');
     if (this.energy > 60 && space)
         return {type: 'reproduce', direction: space};
@@ -271,23 +272,63 @@ PlantEater.prototype.act = function(view) {
         return {type: 'move', direction: space};
 };
 
+function SmartHerbivore() {
+    this.energy = 20;
+    this.direction = randomElement(directionNames);
+}
+SmartHerbivore.prototype.act = function(view) {
+    var space = view.find(' ');
+    if (this.energy > 60 && space)
+        return {type: 'reproduce', direction: space};
+    var plant = view.find('*');
+    var plants = view.findAll('*');
+    if (plant && plants.length > 1)
+        return {type: 'eat', direction: plant};
+    if (view.look(this.direction) != ' ')
+        this.direction = view.find(' ') || 's';
+    return {type: 'move', direction: this.direction};
+};
+
+function Tiger() {
+    this.energy = 30;
+}
+Tiger.prototype.act = function(view) {
+    console.log(this.energy);
+    var space = view.find(' ');
+    if (this.energy > 70 && space)
+        return {type: 'reproduce', direction: space};
+    var herbivore = view.find('O');
+    if (herbivore)
+        return {type: 'eat', direction: herbivore};
+    if (space && this.energy > 10)
+        return {type: 'move', direction: space};
+};
+
 // Run the app
 // ----------------------------------------------------------------------------
-var valley = new LifelikeWorld(
-  ["############################",
-   "#####                 ######",
-   "##   ***                **##",
-   "#   *##**         **  O  *##",
-   "#    ***     O    ##**    *#",
-   "#       O         ##***    #",
-   "#                 ##**     #",
-   "#   O       #*             #",
-   "#*          #**       O    #",
-   "#***        ##**    O    **#",
-   "##****     ###***       *###",
-   "############################"],
+var world = new LifelikeWorld(
+  ["####################################################",
+   "#                 ####         ****              ###",
+   "#   *  @  ##                 ########       OO    ##",
+   "#   *    ##        O O                 ****       *#",
+   "#       ##*                        ##########     *#",
+   "#      ##***  *         ****                     **#",
+   "#* **  #  *  ***      #########                  **#",
+   "#* **  #      *               #   *              **#",
+   "#     ##              #   O   #  ***          ######",
+   "#*            @       #       #   *        O  #    #",
+   "#*                    #  ######                 ** #",
+   "###          ****          ***                  ** #",
+   "#       O                        @         O       #",
+   "#   *     ##  ##  ##  ##               ###      *  #",
+   "#   **         #              *       #####  O     #",
+   "##  **  O   O  #  #    ***  ***        ###      ** #",
+   "###               #   *****                    ****#",
+   "####################################################"],
   {"#": Wall,
-   "O": PlantEater,
+   "@": Tiger,
+   "O": SmartHerbivore, // from previous exercise
    "*": Plant}
 );
-animateWorld(valley);
+
+animateWorld(world);
