@@ -120,6 +120,27 @@ specialForms['define'] = (args, env) => {
     return value;
 };
 
+specialForms['fun'] = (args, env) => {
+    if (!args.length)
+        throw new SyntaxError('Functions need a body');
+    function name(expr) => {
+        if (expr.type !== 'word')
+            throw new SyntaxError('Arg names must be words');
+        return expr.name;
+    };
+    const argNames = args.slice(0, args.length - 1).map(name);
+    const body = args[args.length - 1];
+
+    return () => {
+        if (arguments.length != argNames.length)
+            throw new TypeError('Wrong number of arguments');
+        const localEnv = Object.create(env);
+        for (let i = 0; i < arguments.length; i++)
+            localEnv[argNames[i]] = arguments[i];
+        return evaluate(body, localEnv);
+    };
+};
+
 // Global environment
 // ----------------------------------------------------------------------------
 
@@ -152,3 +173,4 @@ run("do(define(total, 0),",
     "         do(define(total, +(total, count)),",
     "            define(count, +(count, 1)))),",
     "   print(total))");
+// -> 55

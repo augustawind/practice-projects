@@ -293,7 +293,7 @@ function Tiger() {
     this.energy = 30;
 }
 Tiger.prototype.act = function(view) {
-    console.log(this.energy);
+    //console.log(this.energy);
     const space = view.find(' ');
     if (this.energy > 70 && space)
         return {type: 'reproduce', direction: space};
@@ -303,6 +303,31 @@ Tiger.prototype.act = function(view) {
     if (space && this.energy > 10)
         return {type: 'move', direction: space};
 };
+
+function ApexPredator() {
+    this.energy = 60;
+}
+ApexPredator.prototype.act = function(view) {
+    console.log(this.energy);
+    const space = view.find(' ');
+    if (this.energy > 150 && space)
+        return {type: 'reproduce', direction: space};
+    const tiger = view.find('@');
+    const herbivore = view.find('O');
+    if (herbivore && tiger) {
+        if (tiger.energy > herbivore.energy)
+            return {type: 'eat', direction: herbivore};
+        else
+            return {type: 'eat', direction: tiger};
+    } 
+    if (tiger)
+        return {type: 'eat', direction: tiger};
+    if (herbivore)
+        return {type: 'eat', direction: herbivore};
+    if (space && this.energy > 10)
+        return {type: 'move', direction: space};
+};
+
 
 // Run the app
 // ----------------------------------------------------------------------------
@@ -314,7 +339,7 @@ const world = new LifelikeWorld(
    "#       ##*                        ##########     *#",
    "#      ##***  *         ****                     **#",
    "#* **  #  *  ***      #########                  **#",
-   "#* **  #      *               #   *              **#",
+   "#* **  #      *    X          #   *              **#",
    "#     ##              #   O   #  ***          ######",
    "#*            @       #       #   *        O  #    #",
    "#*                    #  ######                 ** #",
@@ -326,6 +351,7 @@ const world = new LifelikeWorld(
    "###               #   *****                    ****#",
    "####################################################"],
   {"#": Wall,
+   "X": ApexPredator,
    "@": Tiger,
    "O": SmartHerbivore, // from previous exercise
    "*": Plant}

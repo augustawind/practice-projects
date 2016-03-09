@@ -1,0 +1,73 @@
+<html>
+  <head>
+    <style>
+      /* Defines a cleaner look for tables */
+      table  { border-celllapse: celllapse; }
+      td, th { border: 1px solid black; padding: 3px 8px; }
+      th     { text-align: left; }
+    </style>
+  </head>
+
+  <body>
+
+    <script>
+      'use strict';
+
+      const MOUNTAINS = [
+        {name: "Kilimanjaro", height: 5895, country: "Tanzania"},
+        {name: "Everest", height: 8848, country: "Nepal"},
+        {name: "Mount Fuji", height: 3776, country: "Japan"},
+        {name: "Mont Blanc", height: 4808, country: "Italy/France"},
+        {name: "Vaalserberg", height: 323, country: "Netherlands"},
+        {name: "Denali", height: 6168, country: "United States"},
+        {name: "Popocatepetl", height: 5465, country: "Mexico"}
+      ];
+
+      function buildTable(data) {
+        const table = document.createElement('table'); 
+        let row, cell, text;
+
+        // Construct table
+        const nCols = Object.keys(data[0]).length;
+        const nRows = data.length;
+
+        row = document.createElement('tr');
+        for (let h = 0; h < nCols; h++) {
+          cell = document.createElement('th');
+          row.appendChild(cell);
+        }
+        table.appendChild(row);
+
+        for (let r = 0; r < nRows; r++) {
+          row = document.createElement('tr');
+          for (let c = 0; c < nCols; c++) {
+            cell = document.createElement('td');
+            row.appendChild(cell);
+          }
+          table.appendChild(row);
+        }
+
+        // Construct header row
+        row = table.rows[0];
+        Object.keys(data[0]).forEach((key, i) => {
+          cell = row.cells[i];
+          cell.innerHTML = key;
+        });
+
+        // Construct remaining rows
+        data.forEach((elem, i) => {
+          Object.keys(elem).forEach((key, j) => {
+            cell = table.rows[i+1].cells[j];
+            text = document.createTextNode(elem[key]);
+            cell.appendChild(text);
+          });
+        });
+
+        return table;
+      }
+
+      document.body.appendChild(buildTable(MOUNTAINS));
+    </script>
+
+  </body>
+</html>
